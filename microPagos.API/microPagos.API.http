@@ -1,0 +1,6 @@
+@microPagos.API_HostAddress = http://localhost:5014
+
+GET {{microPagos.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
