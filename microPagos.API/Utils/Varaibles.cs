@@ -14,15 +14,51 @@
             public static string cnx = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings")["conexion"];
         }
 
+        public static class MercadoPago
+        {
+            private static readonly IConfiguration _config = new ConfigurationBuilder()
+                .AddJsonFile(env)
+                .Build()
+                .GetSection("AppSettings");
 
+            public static string ACCESS_TOKEN { get; } =
+                _config.GetSection("MercadoPago")["ACCESS_TOKEN"];
 
+            public static string SuccessUrl { get; } =
+                _config.GetSection("MercadoPago")["SuccessUrl"];
+
+            public static string FailureUrl { get; } =
+                _config.GetSection("MercadoPago")["FailureUrl"];
+
+            public static string PendingUrl { get; } =
+                _config.GetSection("MercadoPago")["PendingUrl"];
+
+            public static string CallbackUrl { get; } =
+                _config.GetSection("MercadoPago")["CallbackUrl"];
+        }
+        public static class PEDIDOSAPI
+        {
+            public static string url = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("PEDIDOSAPI")["url"];            
+        }
         public static class Token
         {
             public static string PasswordHash = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["PasswordHash"];
             public static string SaltKey = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["SaltKey"];
             public static string VIKey = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["VIKey"];
             public static string Bearer = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["Bearer"];
+            public static string Llave = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["Llave"];
+            public static int Expiration = int.Parse(new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["Expiration"]);
         }
+        public static class Response
+        {
+            public static int OK = StatusCodes.Status200OK;
+            public static int ERROR = StatusCodes.Status500InternalServerError;
+            public static int NotFound = StatusCodes.Status404NotFound;
+            public static int BadRequest = StatusCodes.Status400BadRequest;
+            public static int Inautorizado = StatusCodes.Status401Unauthorized;
+
+        }
+       
 
         //public static class Smtp
         //{
