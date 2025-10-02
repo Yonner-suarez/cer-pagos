@@ -4,9 +4,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>5a05fefa-809d-4936-aa31-e2f828340a50</UserSecretsId>
+    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
 	  <PackageReference Include="MySql.Data" Version="9.4.0" />
 	  <PackageReference Include="mercadopago-sdk" Version="2.10.0" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

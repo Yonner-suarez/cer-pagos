@@ -5,6 +5,7 @@ using microPagos.API.Model.Request;
 using microPagos.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace microPagos.API.Controllers
@@ -12,7 +13,7 @@ namespace microPagos.API.Controllers
     [Authorize]
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class PagoController: ControllerBase
+    public class PagoController : ControllerBase
     {
         private readonly BLPagos _blPagos;
 
@@ -22,8 +23,8 @@ namespace microPagos.API.Controllers
         }
 
         [HttpPost]
-        [Route("[action]")]
-        public ActionResult ordenCompra(OrdenPagoRequest request)
+        [Route("[action]/{idPedido}")]
+        public ActionResult ordenCompra(List<OrdenPagoRequest> request, [Required] int idPedido)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null) return StatusCode(Variables.Response.Inautorizado, null);
@@ -45,7 +46,7 @@ namespace microPagos.API.Controllers
             var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
 
-            GeneralResponse res = _blPagos.GenerarOrdenPago(request, idCliente, email);
+            GeneralResponse res = _blPagos.GenerarOrdenPago(request,idPedido, idCliente, email);
             if (res.status == Variables.Response.OK)
             {
                 return Ok(res);

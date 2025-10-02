@@ -20,34 +20,38 @@ namespace microPagos.API.Logic
             _pedidosClient = new PedidosClient(httpContextAccessor);
         }
 
-        public GeneralResponse GenerarOrdenPago(OrdenPagoRequest req, int idCliente, string correoCliente)
+        public GeneralResponse GenerarOrdenPago(List<OrdenPagoRequest> req,int idPedido, int idCliente, string correoCliente)
         {
             // Configurar credenciales de MercadoPago (PRODUCCIÓN)
             MercadoPagoConfig.AccessToken = Variables.MercadoPago.ACCESS_TOKEN;
 
+            var items = new List<PreferenceItemRequest>();
+
+            foreach (var producto in req)
+            {
+                items.Add(new PreferenceItemRequest
+                {
+                    Title = $"Pedido #{idPedido}",
+                    Quantity = producto.Cantidad, 
+                    CurrencyId = "COP",
+                    UnitPrice = (int)producto.Monto
+                });
+            }
+
             // Crear la preferencia de pago
             var request = new PreferenceRequest
             {
-                Items = new List<PreferenceItemRequest>
-                {
-                    new PreferenceItemRequest
-                    {
-                        Title = $"Pedido #{req.IdPedido}",
-                        Quantity = 1,
-                        CurrencyId = "COP",
-                        UnitPrice = req.Monto
-                    }
-                },
-                ExternalReference = $"pedido_{req.IdPedido}",
+                Items = items,
+                ExternalReference = $"pedido_{idPedido}",
                 Payer = new PreferencePayerRequest
                 {
                     Email = correoCliente // o test user si es sandbox
                 },
                 BackUrls = new PreferenceBackUrlsRequest
                 {
-                    Success = Variables.MercadoPago.SuccessUrl.Replace("idPedidoParams", req.IdPedido.ToString()),
-                    Failure = Variables.MercadoPago.FailureUrl.Replace("idPedidoParams", req.IdPedido.ToString()),
-                    Pending = Variables.MercadoPago.PendingUrl.Replace("idPedidoParams", req.IdPedido.ToString()),
+                    Success = Variables.MercadoPago.SuccessUrl.Replace("idPedidoParams", idPedido.ToString()),
+                    Failure = Variables.MercadoPago.FailureUrl.Replace("idPedidoParams", idPedido.ToString()),
+                    Pending = Variables.MercadoPago.PendingUrl.Replace("idPedidoParams", idPedido.ToString()),
                     
                 },
                 //AutoReturn = "approved",
@@ -62,7 +66,10 @@ namespace microPagos.API.Logic
 
             // Guardar en la BD usando tu DAO
             int idPasarela = DAPagos.CrearPasarela("MercadoPago", idCliente);
-            bool ok = DAPagos.GuardarPago(req.Monto, req.IdPedido, idPasarela, idCliente);
+
+            decimal MontoTotal = req.Sum(x => (x.Monto*x.Cantidad));
+
+            bool ok = DAPagos.GuardarPago(MontoTotal, idPedido, idPasarela, idCliente);
 
             if (!ok)
             {
