@@ -10,7 +10,7 @@ RUN find . -name "*.csproj" -print0 | xargs -0 -n1 dotnet restore
 
 # ARG para elegir el microservicio
 ARG PROJECT_PATH
-WORKDIR "/src/${PROJECT_PATH}"
+WORKDIR "/src/microPagos.API"
 
 # Publicamos el proyecto seleccionado
 RUN dotnet publish -c Release -o /app/publish --no-restore
@@ -27,5 +27,5 @@ COPY --from=build /app/publish .
 
 # Entrypoint dinámico según el proyecto
 ARG PROJECT_DLL
-ENTRYPOINT ["dotnet", "${PROJECT_DLL}"]
+ENTRYPOINT ["dotnet", "microPagos.API.dll"]
 

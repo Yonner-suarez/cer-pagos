@@ -6,45 +6,62 @@
         /// Se asigna en el startup
         /// </summary>
         public static string env = "appsettings.json";
-        public static int ambiente = int.Parse(new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings")["ambiente"]);
-
-        public static class Conexion
+            
+        public static class Token
         {
-            //Local
-            public static string cnx = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings")["conexion"];
+            private static readonly IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile(env, optional: true)
+                .Build();
+
+            // TOKEN_KEY según tu appsettings.json
+            public static readonly string Llave =
+                Environment.GetEnvironmentVariable("TOKEN_KEY") ??
+                config.GetSection("AppSettings").GetSection("Token")["Llave"];
         }
 
         public static class MercadoPago
         {
-            private static readonly IConfiguration _config = new ConfigurationBuilder()
-                .AddJsonFile(env)
+            private static readonly IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile(env, optional: true)
                 .Build()
-                .GetSection("AppSettings");
+                .GetSection("AppSettings").GetSection("MercadoPago");
 
-            public static string ACCESS_TOKEN { get; } =
-                _config.GetSection("MercadoPago")["ACCESS_TOKEN"];
+            // Variables de entorno con prefijo MP_
+            public static readonly string ACCESS_TOKEN =
+                Environment.GetEnvironmentVariable("MP_ACCESS_TOKEN") ??
+                config["ACCESS_TOKEN"];
 
-            public static string SuccessUrl { get; } =
-                _config.GetSection("MercadoPago")["SuccessUrl"];
+            public static readonly string SuccessUrl =
+                Environment.GetEnvironmentVariable("MP_SUCCESS_URL") ??
+                config["SuccessUrl"];
 
-            public static string FailureUrl { get; } =
-                _config.GetSection("MercadoPago")["FailureUrl"];
+            public static readonly string FailureUrl =
+                Environment.GetEnvironmentVariable("MP_FAILURE_URL") ??
+                config["FailureUrl"];
 
-            public static string PendingUrl { get; } =
-                _config.GetSection("MercadoPago")["PendingUrl"];
+            public static readonly string PendingUrl =
+                Environment.GetEnvironmentVariable("MP_PENDING_URL") ??
+                config["PendingUrl"];
 
-            public static string CallbackUrl { get; } =
-                _config.GetSection("MercadoPago")["CallbackUrl"];
+            public static readonly string CallbackUrl =
+                Environment.GetEnvironmentVariable("MP_CALLBACK_URL") ??
+                config["CallbackUrl"];
         }
+
         public static class PEDIDOSAPI
         {
-            public static string url = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("PEDIDOSAPI")["url"];            
+            private static readonly IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile(env, optional: true)
+                .Build()
+                .GetSection("AppSettings").GetSection("PEDIDOSAPI");
+
+            // Variable de entorno PEDIDOS_API_URL
+            public static readonly string Url =
+                Environment.GetEnvironmentVariable("PEDIDOS_API_URL") ??
+                config["url"];
         }
-        public static class Token
-        {
-            public static string Llave = new ConfigurationBuilder().AddJsonFile(env).Build().GetSection("AppSettings").GetSection("Token")["Llave"];        
-        }
-        public static class Response
+
+    public static class Response
         {
             public static int OK = StatusCodes.Status200OK;
             public static int ERROR = StatusCodes.Status500InternalServerError;
