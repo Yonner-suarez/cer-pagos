@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using microPagos.API.Logic;
+using microPagos.API.Model.Request.Validators;
 using microPagos.API.Utils;
 using microPagos.API.Utils.ExternalAPI;
 using microPagos.API.Utils.Filters;
@@ -44,7 +45,7 @@ builder.Services.AddResponseCompression(options =>
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssembly(typeof(AgregarProductoValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(ProcesarPagoValidator).Assembly);
 
 // Controladores + Filtros
 builder.Services.AddControllers(options =>

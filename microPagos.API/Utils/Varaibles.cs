@@ -6,7 +6,35 @@
         /// Se asigna en el startup
         /// </summary>
         public static string env = "appsettings.json";
-            
+
+        public static class Conexion
+        {
+            public static string cnx;
+
+            static Conexion()
+            {
+                // Intentamos primero obtener variables del entorno (Render las pone ahí)
+                var host = Environment.GetEnvironmentVariable("DB_HOST");
+                var port = Environment.GetEnvironmentVariable("DB_PORT");
+                var name = Environment.GetEnvironmentVariable("DB_NAME");
+                var user = Environment.GetEnvironmentVariable("DB_USER");
+                var pass = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+                // Si existen (Render), las usamos
+                if (!string.IsNullOrEmpty(host))
+                {
+                    cnx = $"Server={host};Port={port};Database={name};User ID={user};Password={pass};";
+                }
+                else
+                {
+                    // Si estamos en local, leemos del appsettings.json
+                    cnx = new ConfigurationBuilder()
+                        .AddJsonFile(env)
+                        .Build()
+                        .GetSection("AppSettings")["conexion"];
+                }
+            }
+        }
         public static class Token
         {
             private static readonly IConfiguration config = new ConfigurationBuilder()

@@ -11,7 +11,7 @@ public class PedidosClient
     {
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(Variables.PEDIDOSAPI.url)
+            BaseAddress = new Uri(Variables.PEDIDOSAPI.Url)
         };
 
         _httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -33,7 +33,7 @@ public class PedidosClient
     {
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(Variables.PEDIDOSAPI.url)
+            BaseAddress = new Uri(Variables.PEDIDOSAPI.Url)
         };
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(
