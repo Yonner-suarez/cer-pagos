@@ -59,13 +59,7 @@ namespace microPagos.API.Logic
                 PaymentMethods = new PreferencePaymentMethodsRequest
                 {
                     // 👇 Permitir solo tarjetas y PSE
-                    DefaultPaymentMethodId = "pse",
-                    ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
-                    {
-                        // Excluir métodos que no quieras (por ejemplo, "ticket" = Efecty)
-                        new PreferencePaymentTypeRequest { Id = "ticket" },
-                        new PreferencePaymentTypeRequest { Id = "atm" },
-                    },
+                    DefaultPaymentMethodId = "pse",                    
                     Installments = 12 // Número máximo de cuotas si usas tarjeta
                 }
             };
