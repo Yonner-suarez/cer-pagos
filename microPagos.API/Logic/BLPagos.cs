@@ -62,7 +62,7 @@ namespace microPagos.API.Logic
             Preference preference = client.Create(request);
 
             // URL de checkout para redirigir al cliente
-            string checkoutUrl = preference.SandboxInitPoint;
+            string checkoutUrl = preference.InitPoint;
 
             // Guardar en la BD usando tu DAO
             int idPasarela = DAPagos.CrearPasarela("MercadoPago", idCliente);
