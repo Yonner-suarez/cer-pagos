@@ -55,7 +55,19 @@ namespace microPagos.API.Logic
                     
                 },
                 //AutoReturn = "approved",
-                NotificationUrl = Variables.MercadoPago.CallbackUrl // Webhook para notificaciones
+                NotificationUrl = Variables.MercadoPago.CallbackUrl, // Webhook para notificaciones
+                PaymentMethods = new PreferencePaymentMethodsRequest
+                {
+                    // 👇 Permitir solo tarjetas y PSE
+                    DefaultPaymentMethodId = "pse",
+                    ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
+                    {
+                        // Excluir métodos que no quieras (por ejemplo, "ticket" = Efecty)
+                        new PreferencePaymentTypeRequest { Id = "ticket" },
+                        new PreferencePaymentTypeRequest { Id = "atm" },
+                    },
+                    Installments = 12 // Número máximo de cuotas si usas tarjeta
+                }
             };
 
             var client = new PreferenceClient();
