@@ -56,12 +56,7 @@ namespace microPagos.API.Logic
                 },
                 //AutoReturn = "approved",
                 NotificationUrl = Variables.MercadoPago.CallbackUrl, // Webhook para notificaciones
-                PaymentMethods = new PreferencePaymentMethodsRequest
-                {
-                    // 👇 Permitir solo tarjetas y PSE
-                    DefaultPaymentMethodId = "pse",                    
-                    Installments = 12 // Número máximo de cuotas si usas tarjeta
-                }
+               
             };
 
             var client = new PreferenceClient();
