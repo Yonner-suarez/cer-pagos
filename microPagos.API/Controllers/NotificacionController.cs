@@ -24,74 +24,84 @@ namespace microPagos.API.Controllers
         }
         [HttpPost]
         [Route("Eventos")]
-        public async Task<IActionResult> Eventos([FromBody] JsonElement evento)
+        public async Task<IActionResult> Eventos([FromBody] WompiEventoRequest evento)
         {
             try
             {
-                // 1️⃣ Extraer la info principal
-                var eventType = evento.GetProperty("event").GetString();
-                var environment = evento.GetProperty("environment").GetString();
-                var data = evento.GetProperty("data").GetProperty("transaction");
-                var signature = evento.GetProperty("signature");
-                var timestamp = evento.GetProperty("timestamp").GetInt64();
+                // 1️⃣ Extraer la información principal
+                var eventType = evento.@event;
+                var environment = evento.environment;
+                var transaction = evento.data.transaction;
+                var signature = evento.signature;
+                var timestamp = evento.timestamp;
 
-                var transactionId = data.GetProperty("id").GetString();
-                var status = data.GetProperty("status").GetString();
-                var amount = data.GetProperty("amount_in_cents").GetInt32();
-                var reference = data.GetProperty("reference").GetString();
+                string transactionId = transaction.id;
+                string status = transaction.status;
+                int amount = transaction.amount_in_cents;
+                string reference = transaction.reference;
 
-                // 2️⃣ Validar el checksum (firma del evento)
-                var properties = signature.GetProperty("properties").EnumerateArray()
-                    .Select(x => x.GetString()).ToList();
-
-                // Concatenar los valores indicados en "properties"
+                // 2️⃣ Concatenar los valores indicados en "properties"
                 string concatenado = "";
-                foreach (var prop in properties)
+
+                foreach (var prop in signature.properties)
                 {
-                    // Ejemplo: prop = "transaction.id"
-                    var parts = prop.Split('.');
-                    if (parts.Length == 2 && parts[0] == "transaction")
+                    if (prop.StartsWith("transaction."))
                     {
-                        concatenado += data.GetProperty(parts[1]).GetRawText().Trim('"');
+                        var field = prop.Split('.')[1];
+                        switch (field)
+                        {
+                            case "id":
+                                concatenado += transaction.id;
+                                break;
+                            case "status":
+                                concatenado += transaction.status;
+                                break;
+                            case "amount_in_cents":
+                                concatenado += transaction.amount_in_cents.ToString();
+                                break;
+                        }
                     }
                 }
 
-                // Concatenar timestamp
+                // Concatenar timestamp y secreto
                 concatenado += timestamp.ToString();
-
-                // Concatenar tu SECRETO DE EVENTOS de Wompi Sandbox
-                string secreto = Variables.Wompi.IntegritySecret; // 🔒 pon aquí tu clave sandbox
+                string secreto = Variables.Wompi.IntegritySecret; // 🔒 Tu llave de integridad de eventos Wompi
                 concatenado += secreto;
 
-                // Calcular SHA256
+                // 3️⃣ Calcular SHA256
                 using var sha = System.Security.Cryptography.SHA256.Create();
                 var hash = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(concatenado));
-                var calculado = BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
+                var calculado = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
 
-                var checksum = signature.GetProperty("checksum").GetString();
-
-                // 3️⃣ Validar que la firma coincida
-                if (checksum != calculado)
+                // 4️⃣ Validar que la firma coincida
+                if (signature.checksum.ToLowerInvariant() != calculado)
                 {
-                    Console.WriteLine("⚠️ Firma inválida del evento");
-                    return BadRequest("Firma inválida");
+                    Console.WriteLine($"⚠️ Firma inválida: esperado {calculado}, recibido {signature.checksum}");
+                    return BadRequest(new { error = "Firma inválida" });
                 }
 
-                // 4️⃣ Procesar evento válido
-                Console.WriteLine($"✅ Evento recibido: {eventType} - {status} - Pedido {reference}");
+                // 5️⃣ Procesar evento válido
+                Console.WriteLine($"✅ Evento recibido: {eventType} - Estado: {status} - Pedido: {reference}");
 
-                // 👉 Aquí puedes actualizar tu base de datos:
+                // 👉 Aquí puedes actualizar tu pedido en la BD:
                 // await _blPagos.ActualizarEstado(reference, status);
 
-                // 5️⃣ Responder 200 OK (Wompi lo necesita)
-                return Ok();
+                // 6️⃣ Responder JSON (Wompi lo requiere)
+                return Ok(new
+                {
+                    received = true,
+                    message = "Evento procesado correctamente",
+                    reference,
+                    status
+                });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error manejando evento: {ex.Message}");
-                return StatusCode(500, "Error procesando evento");
+                return StatusCode(Variables.Response.ERROR, new { error = "Error procesando evento", detail = ex.Message });
             }
         }
+
     }
 
 }

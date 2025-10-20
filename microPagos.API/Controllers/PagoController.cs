@@ -1,5 +1,4 @@
-﻿using microPagos.API.Dao;
-using microPagos.API.Logic;
+﻿using microPagos.API.Logic;
 using microPagos.API.Model;
 using microPagos.API.Model.Request;
 using microPagos.API.Utils;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace microPagos.API.Controllers
 {
