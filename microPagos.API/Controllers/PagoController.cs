@@ -52,34 +52,6 @@ namespace microPagos.API.Controllers
             return Ok(res);
         }
 
-        [HttpGet]
-        [Route("[action]/{idPedido}")]
-        public async Task<IActionResult> ValidarPago(int idPedido)
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity == null) return StatusCode(Variables.Response.Inautorizado, null);
 
-
-            var claims = identity.Claims;
-            var role = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-
-            if (role != "Cliente")
-            {
-                return StatusCode(Variables.Response.BadRequest, new GeneralResponse
-                {
-                    data = null,
-                    status = Variables.Response.BadRequest,
-                    message = "Solo los clientes pueden VALIDAR sus pagos"
-                });
-            }
-            GeneralResponse res = await _blPagos.ObtenerPedido(idPedido);
-
-            if (res.data == null || res.data is not true)
-            {
-                return StatusCode(res.status, res);
-            }
-
-            return Ok(res);
-        }
     }
 }

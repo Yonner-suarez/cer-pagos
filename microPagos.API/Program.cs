@@ -3,7 +3,6 @@ using FluentValidation.AspNetCore;
 using microPagos.API.Logic;
 using microPagos.API.Model.Request.Validators;
 using microPagos.API.Utils;
-using microPagos.API.Utils.ExternalAPI;
 using microPagos.API.Utils.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;

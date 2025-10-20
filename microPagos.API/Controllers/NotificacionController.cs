@@ -1,13 +1,7 @@
 ﻿using microPagos.API.Logic;
-using microPagos.API.Model.Request;
-using microPagos.API.Model;
 using microPagos.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using MercadoPago.Client;
-using microPagos.API.Utils.ExternalAPI;
-using System.Text.Json;
 
 namespace microPagos.API.Controllers
 {
@@ -50,17 +44,15 @@ namespace microPagos.API.Controllers
                 // 4️⃣ Validar que la firma coincida
                 if (signature.checksum.ToLowerInvariant() != calculado)
                 {
-                    Console.WriteLine($"⚠️ Firma inválida: esperado {calculado}, recibido {signature.checksum}");
                     return BadRequest(new { error = "Firma inválida" });
                 }
+                string idPedido = reference.Replace("PEDIDO_", ""); // "13"
 
-                // 5️⃣ Procesar evento válido
-                Console.WriteLine($"✅ Evento recibido: {eventType} - Estado: {status} - Pedido: {reference}");
+                if(status== "APPROVED")
+                {
+                    await _blPagos.ActualizarEstadoPago(int.Parse(idPedido));
+                }
 
-                // 👉 Aquí puedes actualizar tu pedido en la BD:
-                // await _blPagos.ActualizarEstado(reference, status);
-
-                // 6️⃣ Responder JSON (Wompi lo requiere)
                 return Ok(new
                 {
                     received = true,

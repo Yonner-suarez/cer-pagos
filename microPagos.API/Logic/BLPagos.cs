@@ -1,14 +1,8 @@
-﻿using MercadoPago.Client.Preference;
-using MercadoPago.Config;
-using MercadoPago.Resource.Preference;
-using microPagos.API.Dao;
+﻿using microPagos.API.Dao;
 using microPagos.API.Model;
 using microPagos.API.Model.Request;
 using microPagos.API.Model.Response;
 using microPagos.API.Utils;
-using microPagos.API.Utils.ExternalAPI;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Text.Json;
 
 namespace microPagos.API.Logic
 {
@@ -69,42 +63,29 @@ namespace microPagos.API.Logic
                 };
             }
         }
-        public int ParseIdPedido(string externalReference)
-        {
-            return int.Parse(externalReference.Replace("pedido_", ""));
-        }
-
         public async Task<int> ActualizarEstadoPago(int externalReference)
-        {
-            var endpoint = $"/api/v1/Notificacion/EstadoPago/{externalReference}";
-
-            await _pedidosClient.PutAsync(endpoint);
-
-            return externalReference; // o retornar algo más relevante según la respuesta
-        }
-
-        public async Task<GeneralResponse> ObtenerPedido(int idPedido)
         {
             try
             {
-                var endpoint = $"/api/v1/Pedido/PedidoDetalle/{idPedido}";
+                var endpoint = $"/api/v1/Pedido/EstadoPago/{externalReference}/1";
 
-                // Ejecuta GET
-                PedidoResponse? pedido = await _pedidosClient.GetAsync(endpoint);
+                await _pedidosClient.PutAsync(endpoint);
 
-                var confirmed = pedido.Data.EstadoPago != "Pendiente de pago" ? true : false;
-
-                if(confirmed && pedido.Data.EstadoPago is not null) return new GeneralResponse { data = confirmed, message = "Pago Confirmado", status = Variables.Response.OK };
-                else
-                {
-                    return new GeneralResponse { data = confirmed, message = "Pago Pendiente", status = Variables.Response.BadRequest };
-                }
+                return externalReference;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                // Error en la llamada HTTP
+                Console.WriteLine($"Error en la petición HTTP: {httpEx.Message}");
+                return -1; 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al obtener pedido: {ex.Message}");
-                return null;
+                // Otros errores inesperados
+                Console.WriteLine($"Ocurrió un error inesperado: {ex.Message}");
+                return -1; 
             }
         }
+
     }
 }
