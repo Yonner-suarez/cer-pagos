@@ -60,7 +60,7 @@ namespace microPagos.API.Controllers
                 concatenado += timestamp.ToString();
 
                 // Concatenar tu SECRETO DE EVENTOS de Wompi Sandbox
-                string secreto = "test_events_xxxxxxxxxxxxxxxxxxxxxxx"; // 🔒 pon aquí tu clave sandbox
+                string secreto = Variables.Wompi.IntegritySecret; // 🔒 pon aquí tu clave sandbox
                 concatenado += secreto;
 
                 // Calcular SHA256
