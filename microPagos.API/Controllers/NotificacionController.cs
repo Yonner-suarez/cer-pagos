@@ -41,37 +41,11 @@ namespace microPagos.API.Controllers
                 string reference = transaction.reference;
 
                 // 2️⃣ Concatenar los valores indicados en "properties"
-                string concatenado = "";
-
-                foreach (var prop in signature.properties)
-                {
-                    if (prop.StartsWith("transaction."))
-                    {
-                        var field = prop.Split('.')[1];
-                        switch (field)
-                        {
-                            case "id":
-                                concatenado += transaction.id;
-                                break;
-                            case "status":
-                                concatenado += transaction.status;
-                                break;
-                            case "amount_in_cents":
-                                concatenado += transaction.amount_in_cents.ToString();
-                                break;
-                        }
-                    }
-                }
-
-                // Concatenar timestamp y secreto
-                concatenado += timestamp.ToString();
-                string secreto = Variables.Wompi.IntegritySecret; // 🔒 Tu llave de integridad de eventos Wompi
-                concatenado += secreto;
-
-                // 3️⃣ Calcular SHA256
+                string concatenado = $"{transaction.id}{transaction.status}{transaction.amount_in_cents}{timestamp}{Variables.Wompi.eventos}";
                 using var sha = System.Security.Cryptography.SHA256.Create();
                 var hash = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(concatenado));
                 var calculado = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+
 
                 // 4️⃣ Validar que la firma coincida
                 if (signature.checksum.ToLowerInvariant() != calculado)

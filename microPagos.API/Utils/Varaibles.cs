@@ -69,9 +69,9 @@
                 config["RedirectUrl"];
 
             // ✅ Renombrada para evitar conflicto
-            public static readonly string EnvironmentType =
-                System.Environment.GetEnvironmentVariable("WOMPI_ENVIRONMENT") ??
-                config["Environment"] ?? "production";
+            public static readonly string eventos =
+                System.Environment.GetEnvironmentVariable("WOMPI_EVENTS") ??
+                config["events"];
         }
         public static class ENVIO
         {
