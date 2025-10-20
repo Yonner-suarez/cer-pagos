@@ -47,33 +47,42 @@
                 config.GetSection("AppSettings").GetSection("Token")["Llave"];
         }
 
-        public static class MercadoPago
+        public static class Wompi
         {
             private static readonly IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile(env, optional: true)
                 .Build()
-                .GetSection("AppSettings").GetSection("MercadoPago");
+                .GetSection("AppSettings").GetSection("Wompi");
 
-            // Variables de entorno con prefijo MP_
-            public static readonly string ACCESS_TOKEN =
-                Environment.GetEnvironmentVariable("MP_ACCESS_TOKEN") ??
-                config["ACCESS_TOKEN"];
+            // Variables de entorno con prefijo WOMPI_
+            public static readonly string PublicKey =
+                System.Environment.GetEnvironmentVariable("WOMPI_PUBLICKEY") ??
+                config["PublicKey"];
 
-            public static readonly string SuccessUrl =
-                Environment.GetEnvironmentVariable("MP_SUCCESS_URL") ??
-                config["SuccessUrl"];
+            public static readonly string IntegritySecret =
+                System.Environment.GetEnvironmentVariable("WOMPI_INTEGRITY_SECRET") ??
+                config["IntegritySecret"];
 
-            public static readonly string FailureUrl =
-                Environment.GetEnvironmentVariable("MP_FAILURE_URL") ??
-                config["FailureUrl"];
+            // URL a la que Wompi redirige al finalizar (puede usarse para redirect-url)
+            public static readonly string RedirectUrl =
+                System.Environment.GetEnvironmentVariable("WOMPI_REDIRECT_URL") ??
+                config["RedirectUrl"];
 
-            public static readonly string PendingUrl =
-                Environment.GetEnvironmentVariable("MP_PENDING_URL") ??
-                config["PendingUrl"];
-
-            public static readonly string CallbackUrl =
-                Environment.GetEnvironmentVariable("MP_CALLBACK_URL") ??
-                config["CallbackUrl"];
+            // ✅ Renombrada para evitar conflicto
+            public static readonly string EnvironmentType =
+                System.Environment.GetEnvironmentVariable("WOMPI_ENVIRONMENT") ??
+                config["Environment"] ?? "production";
+        }
+        public static class ENVIO
+        {
+            public static decimal Monto = decimal.Parse(
+                                                    new ConfigurationBuilder()
+                                                        .AddJsonFile(env)
+                                                        .Build()
+                                                        .GetSection("AppSettings")
+                                                        .GetSection("ENVIO")["Monto"],
+                                                    System.Globalization.CultureInfo.InvariantCulture // 👈 evita problemas con coma/punto decimal
+                                                );
         }
 
         public static class PEDIDOSAPI

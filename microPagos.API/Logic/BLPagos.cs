@@ -7,6 +7,7 @@ using microPagos.API.Model.Request;
 using microPagos.API.Model.Response;
 using microPagos.API.Utils;
 using microPagos.API.Utils.ExternalAPI;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Text.Json;
 
 namespace microPagos.API.Logic
@@ -20,74 +21,53 @@ namespace microPagos.API.Logic
             _pedidosClient = new PedidosClient(httpContextAccessor);
         }
 
-        public GeneralResponse GenerarOrdenPago(List<OrdenPagoRequest> req,int idPedido, int idCliente, string correoCliente)
+        public GeneralResponse GenerarOrdenPago(List<OrdenPagoRequest> request,int idPedido, int idCliente, string correoCliente)
         {
-            // Configurar credenciales de MercadoPago (PRODUCCIÓN)
-            MercadoPagoConfig.AccessToken = Variables.MercadoPago.ACCESS_TOKEN;
-
-            var items = new List<PreferenceItemRequest>();
-
-            foreach (var producto in req)
+            try
             {
-                items.Add(new PreferenceItemRequest
+
+                // 🔹 Calcular el total del pedido
+                var total = request.Sum(x => x.Monto * x.Cantidad) + Variables.ENVIO.Monto;
+                var totalCentavos = (int)(total * 100);
+
+                // 🔹 Crear referencia única (por ejemplo: PEDIDO-1234)
+                var referencia = $"PEDIDO_{idPedido}";
+
+                // 🔹 Generar la firma de integridad
+                var cadena = $"{referencia}{totalCentavos}COP{Variables.Wompi.IntegritySecret}";
+                using var sha256 = System.Security.Cryptography.SHA256.Create();
+                var hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(cadena));
+                var firma = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+
+                // 🔹 Guardar información si es necesario (bitácora o DB)
+                DAPagos.RegistrarIntentoPago(total,idPedido, 1, idCliente);
+
+                // 🔹 Retornar datos al frontend
+                var data = new
                 {
-                    Title = $"Pedido #{idPedido}",
-                    Quantity = producto.Cantidad, 
-                    CurrencyId = "COP",
-                    UnitPrice = (int)producto.Monto
-                });
+                    referencia,
+                    montoEnPesos = totalCentavos,
+                    firma,
+                    Variables.Wompi.RedirectUrl,
+                    Variables.Wompi.PublicKey,
+                };
+
+                return new GeneralResponse
+                {
+                    data = data,
+                    status = Variables.Response.OK,
+                    message = "Orden de pago Wompi generada exitosamente"
+                };
             }
-
-            // Crear la preferencia de pago
-            var request = new PreferenceRequest
-            {
-                Items = items,
-                ExternalReference = $"pedido_{idPedido}",
-                Payer = new PreferencePayerRequest
-                {
-                    Email = correoCliente // o test user si es sandbox
-                },
-                BackUrls = new PreferenceBackUrlsRequest
-                {
-                    Success = Variables.MercadoPago.SuccessUrl.Replace("idPedidoParams", idPedido.ToString()),
-                    Failure = Variables.MercadoPago.FailureUrl.Replace("idPedidoParams", idPedido.ToString()),
-                    Pending = Variables.MercadoPago.PendingUrl.Replace("idPedidoParams", idPedido.ToString()),
-                    
-                },
-                //AutoReturn = "approved",
-                NotificationUrl = Variables.MercadoPago.CallbackUrl, // Webhook para notificaciones
-               
-            };
-
-            var client = new PreferenceClient();
-            Preference preference = client.Create(request);
-
-            // URL de checkout para redirigir al cliente
-            string checkoutUrl = preference.InitPoint;
-
-            // Guardar en la BD usando tu DAO
-            int idPasarela = DAPagos.CrearPasarela("MercadoPago", idCliente);
-
-            decimal MontoTotal = req.Sum(x => (x.Monto*x.Cantidad));
-
-            bool ok = DAPagos.GuardarPago(MontoTotal, idPedido, idPasarela, idCliente);
-
-            if (!ok)
+            catch (Exception ex)
             {
                 return new GeneralResponse
                 {
-                    status = Variables.Response.BadRequest,
-                    message = "No se pudo completar el guardado de pago",
-                    data = null
+                    data = null,
+                    status = Variables.Response.ERROR,
+                    message = $"Error generando orden de pago Wompi: {ex.Message}"
                 };
             }
-
-            return new GeneralResponse
-            {
-                status = Variables.Response.OK,
-                message = "Orden generada correctamente",
-                data = checkoutUrl
-            };
         }
         public int ParseIdPedido(string externalReference)
         {

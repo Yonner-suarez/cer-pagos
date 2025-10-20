@@ -11,7 +11,7 @@ namespace microPagos.API.Utils.ExternalAPI
         static MercadoPagoClient()
         {
             // Configura tu Access Token de MercadoPago
-            MercadoPagoConfig.AccessToken = Variables.MercadoPago.ACCESS_TOKEN;
+           // MercadoPagoConfig.AccessToken = Variables.MercadoPago.ACCESS_TOKEN;
         }
 
         /// <summary>

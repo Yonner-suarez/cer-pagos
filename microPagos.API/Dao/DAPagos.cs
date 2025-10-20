@@ -5,8 +5,7 @@ namespace microPagos.API.Dao
 {
     public class DAPagos
     {
-        public static bool GuardarPago(decimal monto, int idPedido, int idPasarela, int idUsuario)
-        
+        public static bool RegistrarIntentoPago(decimal monto, int idPedido, int idPasarela, int idUsuario)
         {
             using (MySqlConnection conn = new MySqlConnection(Variables.Conexion.cnx))
             {
@@ -15,26 +14,29 @@ namespace microPagos.API.Dao
                     conn.Open();
 
                     string sql = @"
-                        INSERT INTO tbl_cer_pago 
-                        (
-                            cer_decimal_monto,
-                            cer_enum_estado,
-                            cer_int_id_pedido,
-                            cer_int_id_pasarela,
-                            cer_int_created_by
-                        )
-                        VALUES
-                        (
-                            @Monto,
-                            @Estado,
-                            @IdPedido,
-                            @IdPasarela,
-                            @IdUsuario
-                        );";
+                                INSERT INTO tbl_cer_pago 
+                                (
+                                    cer_decimal_monto,
+                                    cer_enum_estado,
+                                    cer_int_id_pedido,
+                                    cer_int_id_pasarela,
+                                    cer_int_created_by,
+                                    cer_datetime_fecha_creacion
+                                )
+                                VALUES
+                                (
+                                    @Monto,
+                                    @Estado,
+                                    @IdPedido,
+                                    @IdPasarela,
+                                    @IdUsuario,
+                                    @Metodo,
+                                    NOW()
+                                );";
 
                     var cmd = new MySqlCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@Monto", monto);
-                    cmd.Parameters.AddWithValue("@Estado", "Pendiente"); // inicia en Pendiente
+                    cmd.Parameters.AddWithValue("@Estado", "Pendiente");
                     cmd.Parameters.AddWithValue("@IdPedido", idPedido);
                     cmd.Parameters.AddWithValue("@IdPasarela", idPasarela);
                     cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
@@ -45,8 +47,7 @@ namespace microPagos.API.Dao
                 }
                 catch (Exception ex)
                 {
-                    // Log del error (puedes usar tu clase Logger o Console)
-                    Console.WriteLine($"Error al guardar pago: {ex.Message}");
+                    Console.WriteLine($"Error al registrar intento de pago: {ex.Message}");
                     return false;
                 }
                 finally
@@ -55,6 +56,7 @@ namespace microPagos.API.Dao
                 }
             }
         }
+
         public static int CrearPasarela(string nombre, int idUsuarioCreador)
         {
             using (MySqlConnection conn = new MySqlConnection(Variables.Conexion.cnx))
