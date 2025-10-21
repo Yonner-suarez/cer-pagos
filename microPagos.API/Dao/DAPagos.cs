@@ -21,7 +21,7 @@ namespace microPagos.API.Dao
                                     cer_int_id_pedido,
                                     cer_int_id_pasarela,
                                     cer_int_created_by,
-                                    cer_datetime_fecha_creacion
+                                    cer_datetime_created_at
                                 )
                                 VALUES
                                 (

@@ -68,6 +68,7 @@ namespace microPagos.API.Logic
             try
             {
                 var endpoint = $"/api/v1/Pedido/EstadoPago/{externalReference}/1";
+                Console.WriteLine(endpoint);
 
                 await _pedidosClient.PutAsync(endpoint);
 
