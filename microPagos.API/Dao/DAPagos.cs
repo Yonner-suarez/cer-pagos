@@ -30,7 +30,6 @@ namespace microPagos.API.Dao
                                     @IdPedido,
                                     @IdPasarela,
                                     @IdUsuario,
-                                    @Metodo,
                                     NOW()
                                 );";
 
