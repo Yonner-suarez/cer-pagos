@@ -22,9 +22,34 @@ public class PedidosClient
 
     public async Task PutAsync(string endpoint)
     {
-        var response = await _httpClient.PutAsync(endpoint, null);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await _httpClient.PutAsync(endpoint, null);
+
+            // Si NO fue exitoso, lanza excepción con detalle del body
+            response.EnsureSuccessStatusCode();
+
+            Console.WriteLine($"✅ PUT {endpoint} - {response.StatusCode}");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"❌ Error en PUT {endpoint}: {ex.Message}");
+
+            // Intentamos leer el contenido del body para ver el error del servidor
+            if (ex.Data.Count == 0)
+            {
+                try
+                {
+                    // Intenta obtener el cuerpo de la respuesta (si existe)
+                    var errorResponse = await _httpClient.GetAsync(endpoint);
+                    var errorContent = await errorResponse.Content.ReadAsStringAsync();
+                    Console.WriteLine($"🧾 Detalle del error: {errorContent}");
+                }
+                catch { /* ignorar errores secundarios */ }
+            }
+        }
     }
+
 
     public async Task<PedidoResponse> GetAsync(string endpoint)
     {
