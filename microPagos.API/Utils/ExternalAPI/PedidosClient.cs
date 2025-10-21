@@ -25,30 +25,33 @@ public class PedidosClient
         try
         {
             var response = await _httpClient.PutAsync(endpoint, null);
+            var content = await response.Content.ReadAsStringAsync(); // 👈 leemos SIEMPRE el contenido
 
-            // Si NO fue exitoso, lanza excepción con detalle del body
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"❌ Error en PUT {endpoint}");
+                Console.WriteLine($"Status: {(int)response.StatusCode} - {response.ReasonPhrase}");
+                Console.WriteLine($"🧾 Detalle del error: {content}");
+            }
+            else
+            {
+                Console.WriteLine($"✅ PUT {endpoint} OK - {(int)response.StatusCode}");
+            }
 
-            Console.WriteLine($"✅ PUT {endpoint} - {response.StatusCode}");
+            response.EnsureSuccessStatusCode(); // 👈 mantiene el comportamiento de lanzar si no fue 2xx
         }
         catch (HttpRequestException ex)
         {
-            Console.WriteLine($"❌ Error en PUT {endpoint}: {ex.Message}");
-
-            // Intentamos leer el contenido del body para ver el error del servidor
-            if (ex.Data.Count == 0)
-            {
-                try
-                {
-                    // Intenta obtener el cuerpo de la respuesta (si existe)
-                    var errorResponse = await _httpClient.GetAsync(endpoint);
-                    var errorContent = await errorResponse.Content.ReadAsStringAsync();
-                    Console.WriteLine($"🧾 Detalle del error: {errorContent}");
-                }
-                catch { /* ignorar errores secundarios */ }
-            }
+            Console.WriteLine($"⚠️ Excepción HTTP en {endpoint}: {ex.Message}");
+            throw; // opcional: vuelve a lanzar para manejo externo
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"💥 Error inesperado en {endpoint}: {ex.Message}");
+            throw;
         }
     }
+
 
 
     public async Task<PedidoResponse> GetAsync(string endpoint)
