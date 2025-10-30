@@ -6,5 +6,6 @@ namespace microPagos.API.Model.Request
     {
         public decimal Monto { get; set; }
         public int Cantidad { get; set; }
+        public decimal TarifaEnvio { get; set; }
     }
 }

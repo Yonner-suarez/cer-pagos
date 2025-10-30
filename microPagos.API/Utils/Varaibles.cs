@@ -1,51 +1,59 @@
 ﻿namespace microPagos.API.Utils
 {
-    public class Variables
-    {
-        /// <summary>
-        /// Se asigna en el startup
-        /// </summary>
-        public static string env = "appsettings.json";
-
-        public static class Conexion
+        public class Variables
         {
-            public static string cnx;
+            /// <summary>
+            /// Se asigna en el startup
+            /// </summary>
+            public static string env = "appsettings.json";
+            public static readonly double RADIO_TIERRA =
+                     double.TryParse(Environment.GetEnvironmentVariable("RADIO_TIERRA"), out var radio)
+                         ? radio
+                        : 6371;
 
-            static Conexion()
+            public static readonly int ID_ORIGEN_ENVIO =
+                int.TryParse(Environment.GetEnvironmentVariable("ID_ORIGEN_ENVIO"), out var idOrigen)
+                    ? idOrigen
+                    : 200;
+        public static class Conexion
             {
-                // Intentamos primero obtener variables del entorno (Render las pone ahí)
-                var host = Environment.GetEnvironmentVariable("DB_HOST");
-                var port = Environment.GetEnvironmentVariable("DB_PORT");
-                var name = Environment.GetEnvironmentVariable("DB_NAME");
-                var user = Environment.GetEnvironmentVariable("DB_USER");
-                var pass = Environment.GetEnvironmentVariable("DB_PASSWORD");
+                public static string cnx;
 
-                // Si existen (Render), las usamos
-                if (!string.IsNullOrEmpty(host))
+                static Conexion()
                 {
-                    cnx = $"Server={host};Port={port};Database={name};User ID={user};Password={pass};";
-                }
-                else
-                {
-                    // Si estamos en local, leemos del appsettings.json
-                    cnx = new ConfigurationBuilder()
-                        .AddJsonFile(env)
-                        .Build()
-                        .GetSection("AppSettings")["conexion"];
+                    // Intentamos primero obtener variables del entorno (Render las pone ahí)
+                    var host = Environment.GetEnvironmentVariable("DB_HOST");
+                    var port = Environment.GetEnvironmentVariable("DB_PORT");
+                    var name = Environment.GetEnvironmentVariable("DB_NAME");
+                    var user = Environment.GetEnvironmentVariable("DB_USER");
+                    var pass = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+                    // Si existen (Render), las usamos
+                    if (!string.IsNullOrEmpty(host))
+                    {
+                        cnx = $"Server={host};Port={port};Database={name};User ID={user};Password={pass};";
+                    }
+                    else
+                    {
+                        // Si estamos en local, leemos del appsettings.json
+                        cnx = new ConfigurationBuilder()
+                            .AddJsonFile(env)
+                            .Build()
+                            .GetSection("AppSettings")["conexion"];
+                    }
                 }
             }
-        }
-        public static class Token
-        {
-            private static readonly IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile(env, optional: true)
-                .Build();
+            public static class Token
+            {
+                private static readonly IConfiguration config = new ConfigurationBuilder()
+                    .AddJsonFile(env, optional: true)
+                    .Build();
 
-            // TOKEN_KEY según tu appsettings.json
-            public static readonly string Llave =
-                Environment.GetEnvironmentVariable("TOKEN_KEY") ??
-                config.GetSection("AppSettings").GetSection("Token")["Llave"];
-        }
+                // TOKEN_KEY según tu appsettings.json
+                public static readonly string Llave =
+                    Environment.GetEnvironmentVariable("TOKEN_KEY") ??
+                    config.GetSection("AppSettings").GetSection("Token")["Llave"];
+            }
 
         public static class Wompi
         {
@@ -73,20 +81,7 @@
                 System.Environment.GetEnvironmentVariable("WOMPI_EVENTS") ??
                 config["events"];
         }
-        public static class ENVIO
-        {
-            private static readonly IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile(env, optional: true)
-                .Build()
-                .GetSection("AppSettings")
-                .GetSection("ENVIO");
-
-            // Lee primero la variable de entorno ENVIO_MONTO; si no existe, toma el valor del archivo JSON
-            public static readonly decimal Monto = decimal.Parse(
-                Environment.GetEnvironmentVariable("ENVIO_MONTO") ?? config["Monto"],
-                System.Globalization.CultureInfo.InvariantCulture
-            );
-        }
+        
 
 
         public static class PEDIDOSAPI

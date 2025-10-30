@@ -4,6 +4,7 @@ using microPagos.API.Model.Request;
 using microPagos.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
@@ -51,7 +52,32 @@ namespace microPagos.API.Controllers
 
             return Ok(res);
         }
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult> Municipios()
+        {  
+            var res = _blPagos.ObtenerMunicipios();
+            if (res.status != Variables.Response.OK)
+            {
+                return StatusCode(res.status, res);
+            }
 
+            return Ok(res);
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("CalcularEnvio/{idDestino}/{peso}")]
+        public async Task<ActionResult> CalcularEnvio([Required] int idDestino, [Required] decimal peso)
+        {
+            var res = _blPagos.CalcularEnvio(idDestino, peso);
+            if (res.status != Variables.Response.OK)
+            {
+                return StatusCode(res.status, res);
+            }
+
+            return Ok(res);
+        }
 
     }
 }
