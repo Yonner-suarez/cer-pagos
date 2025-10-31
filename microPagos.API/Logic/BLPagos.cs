@@ -141,10 +141,10 @@ namespace microPagos.API.Logic
                     };
                 }
 
-                // 3️⃣ Calcular distancia
+                // 3️⃣ Calcular distancia con Haversine
                 double distancia = Haversine(origen.Latitud, origen.Longitud, destino.Latitud, destino.Longitud);
 
-                // 4️⃣ Categorizar
+                // 4️⃣ Categorizar según distancia
                 string categoria;
                 if (distancia <= 50)
                     categoria = "CERCANO";
@@ -153,26 +153,29 @@ namespace microPagos.API.Logic
                 else
                     categoria = "LEJANO";
 
-                // 5️⃣ Tarifa base
+                // 5️⃣ Calcular tarifa base
                 decimal baseTarifa = 8000m;
                 decimal costoKm = categoria == "CERCANO" ? 90m :
-                                  categoria == "INTERMEDIO" ? 130m : 180m;
+                                  categoria == "INTERMEDIO" ? 92m : 95m;
 
                 decimal tarifaBase = baseTarifa + (decimal)distancia * costoKm;
 
+                // 6️⃣ Ajuste si no es capital
                 if (!destino.EsCapital)
                     tarifaBase += 15000m;
 
-                // 7️⃣ Ajustar según peso
-                decimal tarifaFinal;
-                if (pesoKg <= 1)
-                    tarifaFinal = tarifaBase;
-                else if (pesoKg <= 5)
-                    tarifaFinal = tarifaBase + 3000m;
-                else if (pesoKg <= 20)
-                    tarifaFinal = tarifaBase + 9000m;
-                else
-                    tarifaFinal = tarifaBase + 20000m;
+                // 7️⃣ Límite máximo
+                if (tarifaBase > 150000m)
+                    tarifaBase = 150000m;
+
+                // 8️⃣ Ajustar por peso (cada kg adicional cuesta 500 pesos)
+                decimal tarifaFinal = tarifaBase;
+
+                if (pesoKg > 1)
+                {
+                    decimal kilosExtra = pesoKg - 1;
+                    tarifaFinal += kilosExtra * 5000m;
+                }
 
                 var data = new ResultadoEnvio
                 {
@@ -201,6 +204,7 @@ namespace microPagos.API.Logic
                 };
             }
         }
+
         #region Private methods
         private double Haversine(double lat1, double lon1, double lat2, double lon2)
         {
